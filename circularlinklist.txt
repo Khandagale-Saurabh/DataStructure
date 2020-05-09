@@ -1,0 +1,318 @@
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*****  Structure template  *****/
+struct list{
+    int roll_no;
+    char name[20];
+    float marks;
+    struct list *next;
+};
+
+/*****  Redefining struct list as node  *****/
+typedef struct list node;
+
+void init(node*);
+void ins_aft(node*);       /*** FUNCTION FOR DELETING A NODE AFTER ***/
+node* ins_bef(node*);      /*** FUNCTION FOR INSERTING A NODE BEFORE ***/
+node* del(node*);          /*** FUNCTION FOR DELETING A NODE ***/
+void search(node*);        /*** FUNCTION FOR SEARCHING CRITERIA INPUT ***/
+void disp(node*);          /*** FUNCTION DISPLAYING THE NODES ***/
+void rollsrch(node*);      /*** FUNCTION SEARCHING THROUGH ROLL NUMBER ***/
+void namesrch(node*);      /*** FUNCTION SEARCHING THROUGH NAME ***/
+void marksrch(node*);      /*** FUNCTION SEARCHING THROUGH MARKS ***/
+
+/*****  Main function  *****/
+void main()
+{
+    node *head;               /* HEAD OF THE LINK LIST */
+    char ch;                  /* Choice inputing varible */
+    int opt;                  /* Option inputing variable*/
+    static int flag=0;        /* Unchanged after iniialization */
+    clrscr();
+    head=(node*)malloc(sizeof(node));
+    head->next=NULL;   /* NULL is being over written in init function */
+    do
+    {
+again:
+    printf("\nEnter your option\n");
+    printf("\n1. Initialize the node\n");
+    printf("\n2. Insert before a specified node\n");
+    printf("\n3. Insert after a specified node\n");
+    printf("\n4. Delete a particular node\n");
+    printf("\n5. Search the nodes\n");
+    printf("\n6. Display all the nodes\n");
+    scanf("%d",&opt);
+    if(flag==0 && opt!=1)
+    {
+        printf("\nNo. You must first initialize at least one node\n");
+        goto again;
+    }
+    if(flag==1 && opt==1)
+    {
+        printf("\nInitialisation can occur only once.\n");
+        printf("\nNow you can insert a node\n");
+        goto again;
+    }
+    if(opt==4 && head->next==head)
+    {
+        printf("\nYou cannot delete the one and only the single node\n");
+        goto again;
+    }
+    if(flag==0 && opt==1)
+        flag=1;
+    switch(opt)
+    {
+    case 1:
+        init(head);
+        break;
+    case 2:
+        head=ins_bef(head);
+        break;
+    case 3:
+        ins_aft(head);
+        break;
+    case 4:
+        head=del(head);
+        break;
+    case 5:
+        search(head);
+        break;
+    case 6:
+        disp(head);
+        break;
+    }
+    printf("\nDo you wish to continue[y/n]\n");
+    ch=(char)getche();
+    }while(ch=='Y' || ch=='y');
+    printf("\nDone by \"SHABBIR\"\n");
+    printf("\nPress any key to exit\n");
+    getch();
+}
+
+/*****  Initialisation function  *****/
+void init(node *start)
+{
+    printf("\nEnter Roll number\n");
+    scanf("%d",&start->roll_no);
+    printf("\nEnter the name\n");
+    fflush(stdin);
+    gets(start->name);
+    printf("\nEnter the marks\n");
+    scanf("%f",&start->marks);
+    start->next=start;
+}
+
+/*****  Function for inserting before a particular node  *****/
+node* ins_bef(node *start)
+{
+    int rno;                    /* Roll number for inserting a node*/
+    node *newnode;              /* New inputed node*/
+    node *current;              /* Node for travelling the linked list*/
+    newnode=(node*)malloc(sizeof(node));
+    current=start;
+    printf("\nEnter the roll number before which you want to insert a node\n");
+    scanf("%d",&rno);
+    init(newnode);
+    if(current->roll_no==rno)
+    {
+        newnode->next=start;
+        while(current->next!=start)
+            current=current->next;
+        current->next=newnode;
+        start=newnode;
+        return(start);
+    }
+    while(current->next!=start)
+    {
+        if(current->next->roll_no==rno)
+        {
+            newnode->next=current->next;
+            current->next=newnode;
+            return(start);
+        }
+        current=current->next;
+    }
+    /*
+    If the function does not return from any return statement.
+    There is no match to insert before the input  roll number.
+    */
+    printf("\nMatch not found\n");
+    return(start);
+}
+
+/*****  Function for inserting after a particular node  *****/
+void ins_aft(node *start)
+{
+    int rno;                    /* Roll number for inserting a node*/
+    int flag=0;
+    node *newnode;              /* New inputed node*/
+    node *current;              /* Node for travelling the linked list*/
+    newnode=(node*)malloc(sizeof(node));
+    printf("\nEnter the roll number after which you want to insert a node\n");
+    scanf("%d",&rno);
+    init(newnode);
+    current=start;
+    while(current->next!=start)
+    {
+        /***  Insertion checking for all nodes except last  ***/
+        if(current->roll_no==rno)
+        {
+            newnode->next=current->next;
+            current->next=newnode;
+            flag=1;
+        }
+        current=current->next;
+    }
+    if(flag==0 && current->next==start && current->roll_no==rno)
+    {
+        /***  Insertion checking for last nodes  ***/
+        newnode->next=current->next;    /** start is copied in newnode->next**/
+        current->next=newnode;
+        flag=1;
+    }
+    if(flag==0 && current->next==start)
+        printf("\nNo match found\n");
+}
+
+/*****  deletion function  *****/
+node* del(node *start)
+{
+    int rno;                    /* Roll number for deleting a node*/
+    node *delnode;          /* Node to be deleted */
+    node *current;              /* Node for travelling the linked list*/
+    printf("\nEnter the roll number whose node you want to delete\n");
+    scanf("%d",&rno);
+    current=start;
+    if(current->roll_no==rno)
+    {
+        /***  Checking condition for deletion of first node  ***/
+        delnode=current; /*  Unnecessary step  */
+        while(current->next!=start)
+            current=current->next;
+        current->next=start->next;
+        start=start->next;
+        free(delnode);
+        return(start);
+    }
+    else
+    {
+        while(current->next->next!=start)
+        {
+            /***  Checking condition for deletion of   ***/
+            /*** all nodes except first and last node  ***/
+            if(current->next->roll_no==rno)
+            {
+                delnode=current->next;
+                current->next=current->next->next;
+                free(delnode);
+                return(start);
+            }
+            current=current->next;
+        }
+        if(current->next->next==start && current->next->roll_no==rno)
+        {
+            /***  Checking condition for deletion of last node  ***/
+            delnode=current->next;
+            free(delnode);
+            current->next=start;
+            return(start);
+        }
+    }
+    printf("\nMatch not found\n");
+    return(start);
+}
+
+void search(node *start)
+{
+    int ch;                          /* Choice inputing variable */
+    printf("\nEnter the criteria for search\n");
+    printf("\n1. Roll number\n");
+    printf("\n2. Name\n");
+    printf("\n3. Marks\n");
+    scanf("%d",&ch);
+    switch(ch)
+    {
+    case 1:
+        rollsrch(start);
+        break;
+    case 2:
+        namesrch(start);
+        break;
+    case 3:
+        marksrch(start);
+        break;
+    default:
+        rollsrch(start);
+    }
+}
+
+/*****  Search function searching the appropriate roll number *****/
+void rollsrch(node *start)
+{
+    int rno;                    /* Roll number to be searched */
+    node *current;              /* Node for travelling the linked list*/
+    current=start;
+    printf("\nEnter the roll number to search\n");
+    scanf("%d",&rno);
+    while(current->next!=start)
+    {
+        if(current->roll_no==rno)
+            printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+        current=current->next;
+    }
+    if(current->next==start && current->roll_no==rno)
+        printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+}
+
+/*****  Search function searching the appropriate name *****/
+void namesrch(node *start)
+{
+    char arr[20];               /* Name to be searched */
+    node *current;              /* Node for travelling the linked list*/
+    current=start;
+    printf("\nEnter the name to search\n");
+    fflush(stdin);
+    gets(arr);
+    while(current->next!=start)
+    {
+        if(strcmp(current->name,arr)==NULL)
+            printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+        current=current->next;
+    }
+    if(current->next==start && strcmp(current->name,arr)==NULL)
+        printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+}
+
+/*****  Search function searching the appropriate marks *****/
+void marksrch(node *start)
+{
+    float marks;                /* Marks to be searched */
+    node *current;              /* Node for travelling the linked list*/
+    current=start;
+    printf("\nEnter the marks to search\n");
+    scanf("%f",&marks);
+    while(current->next!=start)
+    {
+        if(current->marks==marks)
+            printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+        current=current->next;
+    }
+    if(current->next==start && current->marks==marks)
+        printf("\n %d  %s  %f\n",current->roll_no,current->name,current->marks);
+}
+
+/*****  Output displaying function  *****/
+void disp(node *start)
+{
+    node *current;              /* Node for travelling the linked list*/
+    current=start;
+    while(current->next!=start)
+    {
+        printf("\n %d  %s  %f",current->roll_no,current->name,current->marks);
+        current=current->next;
+    }
+    printf("\n %d  %s  %f",current->roll_no,current->name,current->marks);
+}
